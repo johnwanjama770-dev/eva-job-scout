@@ -1071,11 +1071,13 @@ function normalize(j) {
 
 /* ---------- API fetching ---------- */
 async function fetchLiveJobs() {
+  const proxy = 'https://corsproxy.io/?';
   const endpoints = [
-    API_BASE + '?count=50&tag=assistant',
-    API_BASE + '?count=50&industry=business',
-    API_BASE + '?count=50'
+    proxy + encodeURIComponent(API_BASE + '?count=200&tag=assistant'),
+    proxy + encodeURIComponent(API_BASE + '?count=200&industry=business'),
+    proxy + encodeURIComponent(API_BASE + '?count=200')
   ];
+
   for (const url of endpoints) {
     try {
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -1083,7 +1085,7 @@ async function fetchLiveJobs() {
       const data = await res.json();
       if (data && Array.isArray(data.jobs) && data.jobs.length) return data.jobs;
     } catch (err) {
-      /* try next endpoint */
+      console.warn('Failed to fetch from endpoint, trying next...', err);
     }
   }
   return null;
@@ -1357,13 +1359,7 @@ function bindEvents() {
   });
 
   $('#geoSelect').addEventListener('change', () => {
-    state.geo = $('#geoSelect').value;
-    applyFilters();
-  });
-
-  // quick tags
-  $$('.quick button').forEach(b => b.addEventListener('click', () => {
-    $('#q').value = b.dataset.quick;
+    state.geo = $('#geoSelect').value;     applyFilters();   });    // quick tags   $$('.quick button').forEach(b => b.addEventListener('click', () => {$('#q').value = b.dataset.quick;
     state.query = b.dataset.quick;
     state.savedOnly = false;
     applyFilters();
@@ -1391,8 +1387,7 @@ function bindEvents() {
   $('#resetFilters').addEventListener('click', () => {
     state.types.clear(); state.geos.clear(); state.levels.clear(); state.industries.clear();
     state.salary = 0; state.query = ''; state.geo = ''; state.savedOnly = false;
-    $('#q').value = ''; $('#geoSelect').value = '';
-    $$('#filtersPanel input[type="checkbox"]').forEach(i => i.checked = false);
+    $('#q').value = ''; $('#geoSelect').value = '';     $$('#filtersPanel input[type="checkbox"]').forEach(i => i.checked = false);
     const anyRadio = $('#facetSalary input[value="0"]');
     if (anyRadio) anyRadio.checked = true;
     applyFilters();
@@ -1406,11 +1401,7 @@ function bindEvents() {
   });
 
   // view toggle
-  $('#viewToggle').addEventListener('click', e => {
-    const btn = e.target.closest('button[data-view]');
-    if (!btn) return;
-    state.view = btn.dataset.view;
-    $$('#viewToggle button').forEach(b => b.classList.toggle('active', b === btn));
+  $('#viewToggle').addEventListener('click', e => {     const btn = e.target.closest('button[data-view]');     if (!btn) return;     state.view = btn.dataset.view;     $$('#viewToggle button').forEach(b => b.classList.toggle('active', b === btn));
     render();
   });
 
